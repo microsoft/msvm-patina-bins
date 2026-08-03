@@ -1,0 +1,27 @@
+# @file update-release-draft.yml
+#
+# Creates and continiously updates a release draft based on the PRs in the repository.
+#
+# This workflow takes advantage of the labels used in the project to automatically categorize the types of
+# changes in a given release. In addition, the semantic version of the code is constantly maintianed using
+# typical semantic versioning rules.
+#
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0
+##
+name: Update Release Draft
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  draft:
+
+    permissions:
+      contents: write
+      pull-requests: write
+
+    uses: OpenDevicePartnership/patina-devops/.github/workflows/UpdateReleaseDraft.yml@v0.3.12
+    secrets: inherit

@@ -1,0 +1,9 @@
+{
+  "rust-analyzer.check.overrideCommand": [
+    "cargo",
+    "make",
+    "check",
+    "--message-format=json"
+  ],
+  "rust-analyzer.cargo.targetDir": true,
+}

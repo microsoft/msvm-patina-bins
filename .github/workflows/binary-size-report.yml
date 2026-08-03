@@ -1,0 +1,151 @@
+# @file binary-size-check.yml
+#
+# GitHub Actions workflow to compare MSVM Patina DXE Core binary sizes for PRs.
+#
+# This workflow runs in an untrusted PR context to build the code on a fork and upload
+# the size data as an artifact. When it is complete, a separate workflow (binary-size-comment.yml)
+# operates exclusively on the size data artifact and posts the comment.
+#
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0
+
+name: Binary Size Report
+
+on:
+  pull_request:
+
+jobs:
+  run:
+    name: Binary Size Report
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: ✅ Checkout Base Branch (${{ github.base_ref }}) ✅
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.base_ref }}
+          fetch-depth: 0
+
+      - name: 🛠️ Download Rust Tools Base Branch (${{ github.base_ref }}) 🛠️
+        uses: OpenDevicePartnership/patina-devops/.github/actions/rust-tool-cache@main
+
+      - name: Build Base Branch (${{ github.base_ref }})
+        run: |
+          cargo make msvm-x64
+          cargo make msvm-aarch64
+          cargo make msvm-x64-release
+          cargo make msvm-aarch64-release
+
+      - name: Get Base Branch (${{ github.base_ref }}) Sizes
+        id: size-base
+        shell: bash
+        run: |
+          get_size() { python3 -c "import os; print(os.path.getsize('$1'))"; }
+          echo "msvm_x64_debug=$(get_size target/x86_64-unknown-uefi/debug/msvm_x64_dxe_core.efi)" >> $GITHUB_OUTPUT
+          echo "msvm_x64_release=$(get_size target/x86_64-unknown-uefi/release/msvm_x64_dxe_core.efi)" >> $GITHUB_OUTPUT
+          echo "msvm_aarch64_debug=$(get_size target/aarch64-unknown-uefi/debug/msvm_aarch64_dxe_core.efi)" >> $GITHUB_OUTPUT
+          echo "msvm_aarch64_release=$(get_size target/aarch64-unknown-uefi/release/msvm_aarch64_dxe_core.efi)" >> $GITHUB_OUTPUT
+
+      - name: ✅ Checkout PR Branch (${{ github.head_ref }}) ✅
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: 🛠️ Download Rust Tools PR Branch (${{ github.head_ref }}) 🛠️
+        uses: OpenDevicePartnership/patina-devops/.github/actions/rust-tool-cache@main
+
+      - name: Build PR Branch (${{ github.head_ref }})
+        run: |
+          cargo make msvm-x64
+          cargo make msvm-aarch64
+          cargo make msvm-x64-release
+          cargo make msvm-aarch64-release
+
+      - name: Get PR Branch (${{ github.head_ref }}) Sizes
+        id: size-pr
+        shell: bash
+        run: |
+          get_size() { python3 -c "import os; print(os.path.getsize('$1'))"; }
+          echo "msvm_x64_debug=$(get_size target/x86_64-unknown-uefi/debug/msvm_x64_dxe_core.efi)" >> $GITHUB_OUTPUT
+          echo "msvm_x64_release=$(get_size target/x86_64-unknown-uefi/release/msvm_x64_dxe_core.efi)" >> $GITHUB_OUTPUT
+          echo "msvm_aarch64_debug=$(get_size target/aarch64-unknown-uefi/debug/msvm_aarch64_dxe_core.efi)" >> $GITHUB_OUTPUT
+          echo "msvm_aarch64_release=$(get_size target/aarch64-unknown-uefi/release/msvm_aarch64_dxe_core.efi)" >> $GITHUB_OUTPUT
+
+      - name: 📊 Binary Size Report
+        shell: bash
+        run: |
+          REPORT_FILE="$GITHUB_WORKSPACE/binary_size_report.md"
+
+          pretty_size() {
+            local bytes=$1
+            local sign=""
+            if (( bytes < 0 )); then sign="-"; bytes=$(( -bytes )); fi
+            awk -v b="$bytes" -v s="$sign" 'BEGIN {
+              if (b < 1024) { printf "%s%.2f B ", s, b }
+              else if (b < 1024*1024) { printf "%s%.2f KB", s, b/1024 }
+              else { printf "%s%.2f MB", s, b/(1024*1024) }
+            }'
+          }
+
+          SHA1="${{ github.base_ref }}"
+          SHA2="${{ github.head_ref }}"
+
+          MSVM_X64_SHA1_DEBUG_SIZE=${{ steps.size-base.outputs.msvm_x64_debug }}
+          MSVM_X64_SHA2_DEBUG_SIZE=${{ steps.size-pr.outputs.msvm_x64_debug }}
+          MSVM_X64_DEBUG_DIFF=$((MSVM_X64_SHA2_DEBUG_SIZE - MSVM_X64_SHA1_DEBUG_SIZE))
+          MSVM_X64_DEBUG_DIFF_COLUMN="$(printf '`%11s`<br>`%11s`<br>**`Δ %9s`**' \
+            "$(pretty_size "$MSVM_X64_SHA1_DEBUG_SIZE")" \
+            "$(pretty_size "$MSVM_X64_SHA2_DEBUG_SIZE")" \
+            "$(pretty_size "$MSVM_X64_DEBUG_DIFF")")"
+
+          MSVM_X64_SHA1_RELEASE_SIZE=${{ steps.size-base.outputs.msvm_x64_release }}
+          MSVM_X64_SHA2_RELEASE_SIZE=${{ steps.size-pr.outputs.msvm_x64_release }}
+          MSVM_X64_RELEASE_DIFF=$((MSVM_X64_SHA2_RELEASE_SIZE - MSVM_X64_SHA1_RELEASE_SIZE))
+          MSVM_X64_RELEASE_DIFF_COLUMN="$(printf '`%11s`<br>`%11s`<br>**`Δ %9s`**' \
+            "$(pretty_size "$MSVM_X64_SHA1_RELEASE_SIZE")" \
+            "$(pretty_size "$MSVM_X64_SHA2_RELEASE_SIZE")" \
+            "$(pretty_size "$MSVM_X64_RELEASE_DIFF")")"
+
+          MSVM_AARCH64_SHA1_DEBUG_SIZE=${{ steps.size-base.outputs.aarch64_debug }}
+          MSVM_AARCH64_SHA2_DEBUG_SIZE=${{ steps.size-pr.outputs.aarch64_debug }}
+          MSVM_AARCH64_DEBUG_DIFF=$((MSVM_AARCH64_SHA2_DEBUG_SIZE - MSVM_AARCH64_SHA1_DEBUG_SIZE))
+          MSVM_AARCH64_DEBUG_DIFF_COLUMN="$(printf '`%11s`<br>`%11s`<br>**`Δ %9s`**' \
+            "$(pretty_size "$MSVM_AARCH64_SHA1_DEBUG_SIZE")" \
+            "$(pretty_size "$MSVM_AARCH64_SHA2_DEBUG_SIZE")" \
+            "$(pretty_size "$MSVM_AARCH64_DEBUG_DIFF")")"
+
+          MSVM_AARCH64_SHA1_RELEASE_SIZE=${{ steps.size-base.outputs.aarch64_release }}
+          MSVM_AARCH64_SHA2_RELEASE_SIZE=${{ steps.size-pr.outputs.aarch64_release }}
+          MSVM_AARCH64_RELEASE_DIFF=$((MSVM_AARCH64_SHA2_RELEASE_SIZE - MSVM_AARCH64_SHA1_RELEASE_SIZE))
+          MSVM_AARCH64_RELEASE_DIFF_COLUMN="$(printf '`%11s`<br>`%11s`<br>**`Δ %9s`**' \
+            "$(pretty_size "$MSVM_AARCH64_SHA1_RELEASE_SIZE")" \
+            "$(pretty_size "$MSVM_AARCH64_SHA2_RELEASE_SIZE")" \
+            "$(pretty_size "$MSVM_AARCH64_RELEASE_DIFF")")"
+
+          echo "<!-- binary-size-report -->" > "$REPORT_FILE"
+          echo "### Binary Size Report" >> "$REPORT_FILE"
+          echo "" >> "$REPORT_FILE"
+          echo "| Platform          | Commit                                       | Δ Debug Size                    | Δ Release Size                    |" >> "$REPORT_FILE"
+          echo "|-------------------|----------------------------------------------|---------------------------------|-----------------------------------|" >> "$REPORT_FILE"
+          echo "| MSVM X64          | Base:\`${SHA1}\`<br>PR:\`${SHA2}\`<br>&nbsp; | $MSVM_X64_DEBUG_DIFF_COLUMN     | $MSVM_X64_RELEASE_DIFF_COLUMN     |" >> "$REPORT_FILE"
+          echo "| MSVM AARCH64      | Base:\`${SHA1}\`<br>PR:\`${SHA2}\`<br>&nbsp; | $MSVM_AARCH64_DEBUG_DIFF_COLUMN | $MSVM_AARCH64_RELEASE_DIFF_COLUMN |" >> "$REPORT_FILE"
+          echo "" >> "$REPORT_FILE"
+
+          cat "$REPORT_FILE" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: 📁 Save PR Metadata and Report
+        shell: bash
+        run: |
+          mkdir -p pr-data
+          echo "${{ github.event.pull_request.number }}" > pr-data/pr_number.txt
+          echo "${{ github.base_ref }}" > pr-data/base_ref.txt
+          echo "${{ github.head_ref }}" > pr-data/head_ref.txt
+          cp "$GITHUB_WORKSPACE/binary_size_report.md" pr-data/
+
+      - name: 📤 Upload PR Data and Report
+        uses: actions/upload-artifact@v7
+        with:
+          name: binary-size-report-data
+          path: pr-data/
+          retention-days: 1

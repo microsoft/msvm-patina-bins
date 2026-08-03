@@ -1,0 +1,88 @@
+# @file publish-binaries.yml
+#
+# A workflow for publishing MSVM DXE Core binaries.
+#
+##
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0
+##
+name: Publish
+
+on:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    name: Publish Binaries
+
+    runs-on: windows-latest
+
+    permissions:
+      contents: write
+      actions: read
+
+    steps:
+      - name: ✅ Checkout Repository ✅
+        uses: actions/checkout@v6
+
+      - name: 🛠️ Download Rust Tools 🛠️
+        uses: OpenDevicePartnership/patina-devops/.github/actions/rust-tool-cache@main
+
+      - name: Setup artifacts directories
+        run: |
+          mkdir -p artifacts/debug
+          mkdir -p artifacts/release
+          mkdir -p artifacts/debug/debugger
+
+      - name: Build MSVM X64 Debug
+        run: |
+          cargo make msvm-x64
+          cp target/x86_64-unknown-uefi/debug/msvm_x64_dxe_core.efi artifacts/debug/msvm_x64_dxe_core.efi
+          cp target/x86_64-unknown-uefi/debug/msvm_x64_dxe_core.pdb artifacts/debug/msvm_x64_dxe_core.pdb
+
+      - name: Build MSVM AARCH64 Debug
+        run: |
+          cargo make msvm-aarch64
+          cp target/aarch64-unknown-uefi/debug/msvm_aarch64_dxe_core.efi artifacts/debug/msvm_aarch64_dxe_core.efi
+          cp target/aarch64-unknown-uefi/debug/msvm_aarch64_dxe_core.pdb artifacts/debug/msvm_aarch64_dxe_core.pdb
+
+      - name: Build MSVM X64 Release
+        run: |
+          cargo make msvm-x64-release
+          cp target/x86_64-unknown-uefi/release/msvm_x64_dxe_core.efi artifacts/release/msvm_x64_dxe_core.efi
+          cp target/x86_64-unknown-uefi/release/msvm_x64_dxe_core.pdb artifacts/release/msvm_x64_dxe_core.pdb
+
+      - name: Build MSVM AARCH64 Release
+        run: |
+          cargo make msvm-aarch64-release
+          cp target/aarch64-unknown-uefi/release/msvm_aarch64_dxe_core.efi artifacts/release/msvm_aarch64_dxe_core.efi
+          cp target/aarch64-unknown-uefi/release/msvm_aarch64_dxe_core.pdb artifacts/release/msvm_aarch64_dxe_core.pdb
+
+      - name: Build MSVM X64 Debug (Debugger)
+        run: |
+          cargo make msvm-x64 --features enable_debugger
+          cp target/x86_64-unknown-uefi/debug/msvm_x64_dxe_core.efi artifacts/debug/debugger/msvm_x64_dxe_core.efi
+          cp target/x86_64-unknown-uefi/debug/msvm_x64_dxe_core.pdb artifacts/debug/debugger/msvm_x64_dxe_core.pdb
+
+      - name: Build MSVM AARCH64 Debug (Debugger)
+        run: |
+          cargo make msvm-aarch64 --features enable_debugger
+          cp target/aarch64-unknown-uefi/debug/msvm_aarch64_dxe_core.efi artifacts/debug/debugger/msvm_aarch64_dxe_core.efi
+          cp target/aarch64-unknown-uefi/debug/msvm_aarch64_dxe_core.pdb artifacts/debug/debugger/msvm_aarch64_dxe_core.pdb
+
+      - name: Upload Binaries
+        if: ${{ github.event_name != 'release' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: msvm-dxe-core
+          path: artifacts/
+
+      - name: Publish Release Asset
+        if: ${{ github.event_name == 'release' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          Compress-Archive -Path artifacts/* -DestinationPath patina_dxe_core_msvm.zip
+          gh release upload ${{ github.event.release.tag_name }} patina_dxe_core_msvm.zip

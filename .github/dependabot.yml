@@ -1,0 +1,69 @@
+## @file
+# Dependabot configuration file.
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Please see the documentation for all dependabot configuration options:
+# https://docs.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
+##
+
+version: 2
+
+updates:
+  - package-ecosystem: "cargo"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+      day: "monday"
+      timezone: "America/Los_Angeles"
+      time: "03:00"
+    commit-message:
+      prefix: "Rust Dependency"
+    labels:
+      - "type:dependencies"
+      - "type:dependabot"
+    groups:
+      all-cargo-dependencies:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+    rebase-strategy: "disabled"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+      day: "monday"
+      timezone: "America/Los_Angeles"
+      time: "06:00"
+    groups:
+      all-actions-dependencies:
+        patterns:
+          - "*"
+    commit-message:
+      prefix: "GitHub Action"
+    labels:
+      - "type:dependencies"
+      - "type:dependabot"
+    rebase-strategy: "disabled"
+
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+      day: "wednesday"
+      timezone: "America/Los_Angeles"
+      time: "01:00"
+    groups:
+      all-pip-dependencies:
+        patterns:
+          - "*"
+    commit-message:
+      prefix: "pip"
+    labels:
+      - "language:python"
+      - "type:dependencies"
+      - "type:dependabot"
+    rebase-strategy: "disabled"

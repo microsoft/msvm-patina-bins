@@ -1,0 +1,61 @@
+[package]
+name = "msvm_dxe_core"
+version = "0.0.1"
+edition = "2024"
+license = "Apache-2.0"
+
+[[bin]]
+name = "msvm_x64_dxe_core"
+path = "bin/msvm_x64_dxe_core.rs"
+required-features = ["x64"]
+
+[[bin]]
+name = "msvm_aarch64_dxe_core"
+path = "bin/msvm_aarch64_dxe_core.rs"
+required-features = ["aarch64"]
+
+[lib]
+name = "msvm_resources"
+path = "src/lib.rs"
+
+[dependencies]
+
+# Patina dependencies
+patina = { version = "23" }
+patina_adv_logger = { version = "23" }
+patina_debugger = { version = "23" }
+patina_dxe_core = { version = "23" }
+patina_ffs_extractors = { version = "23" }
+patina_mm = { version = "23" }
+patina_performance = { version = "23" }
+patina_samples = { version = "23" }
+patina_stacktrace = { version = "23" }
+patina_test = { version = "23", features = ["test-runner"] }
+
+# Other dependencies
+log = { version = "^0.4", default-features = false, features = [
+  "release_max_level_info",
+] }
+zerocopy = { version = "0.8", features = ["derive"] }
+
+[lints]
+workspace = true
+
+[workspace.lints.rust]
+# Set by cargo-llvm-cov during coverage runs. Declared here so gating
+# `coverage_attribute` behind it does not trigger unexpected_cfgs warnings.
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage)'] }
+
+[features]
+ci_features = [
+  'build_debugger',
+  'compatibility_mode_allowed',
+  'enable_debugger',
+]
+# Keep the default features here in sync with the features listed in BASE_FEATURES in Makefile.toml
+default = ["compatibility_mode_allowed"]
+compatibility_mode_allowed = ["patina_dxe_core/compatibility_mode_allowed"]
+x64 = []
+aarch64 = []
+build_debugger = ["patina_dxe_core/debugger_reload"]
+enable_debugger = ["build_debugger"]

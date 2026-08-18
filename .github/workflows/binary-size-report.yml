@@ -21,7 +21,7 @@ jobs:
     steps:
 
       - name: ✅ Checkout Base Branch (${{ github.base_ref }}) ✅
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: ${{ github.base_ref }}
           fetch-depth: 0
@@ -47,7 +47,7 @@ jobs:
           echo "msvm_aarch64_release=$(get_size target/aarch64-unknown-uefi/release/msvm_aarch64_dxe_core.efi)" >> $GITHUB_OUTPUT
 
       - name: ✅ Checkout PR Branch (${{ github.head_ref }}) ✅
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0

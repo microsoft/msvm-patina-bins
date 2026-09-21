@@ -1,6 +1,6 @@
 [package]
 name = "msvm_dxe_core"
-version = "0.0.1"
+version = "0.2.0"
 edition = "2024"
 license = "Apache-2.0"
 
@@ -24,7 +24,7 @@ path = "src/lib.rs"
 patina = { version = "23" }
 patina_adv_logger = { version = "23" }
 patina_debugger = { version = "23" }
-patina_dxe_core = { version = "23" }
+patina_dxe_core = { version = "23", features = ["confidential_compute"] }
 patina_ffs_extractors = { version = "23" }
 patina_mm = { version = "23" }
 patina_performance = { version = "23" }

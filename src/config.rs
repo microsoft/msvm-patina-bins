@@ -36,11 +36,8 @@ const MSVM_PATINA_CONFIG_HOB_VERSION_MINOR: u32 = 0;
 #[repr(C, packed)]
 #[derive(Clone, Copy, Debug, Default, FromBytes, KnownLayout, Immutable)]
 pub struct MsvmPatinaConfig {
-    /// Major version of the MSVM Patina Config structure.
-    pub version_major: u32,
-    /// Minor version of the MSVM Patina Config structure.
-    pub version_minor: u32,
-
+    /// Config structure version info.
+    pub version: MsvmPatinaConfigVersion,
     /// Base address of the GIC distributor (AArch64 only).
     #[cfg(target_arch = "aarch64")]
     pub gic_distributor_base: patina::standard::efi::PhysicalAddress,
@@ -55,9 +52,11 @@ pub struct MsvmPatinaConfig {
 /// payload is interpreted, regardless of how large the producer's structure is.
 #[repr(C, packed)]
 #[derive(Clone, Copy, Debug, Default, FromBytes, KnownLayout, Immutable)]
-struct MsvmPatinaConfigVersion {
-    version_major: u32,
-    version_minor: u32,
+pub struct MsvmPatinaConfigVersion {
+    /// Major version of the MSVM Patina Config structure.
+    pub version_major: u32,
+    /// Minor version of the MSVM Patina Config structure.
+    pub version_minor: u32,
 }
 
 impl MsvmPatinaConfig {

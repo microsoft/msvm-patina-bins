@@ -12,3 +12,5 @@
 #![cfg_attr(coverage, feature(coverage_attribute))]
 
 pub mod config;
+#[cfg(target_arch = "x86_64")]
+pub mod x64;

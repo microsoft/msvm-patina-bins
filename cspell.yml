@@ -20,25 +20,40 @@ minWordLength: 4
 caseSensitive: false
 allowCompoundWords: true
 words:
+  - apic
   - asan
   - cfgs
+  - cpuid
   - dxecore
   - efiapi
+  - efer
   - gicd
   - gicr
   - keccak
+  - lvmcall
   - mdbook
+  - micr
   - msvc
   - msvm
+  - msrs
+  - mtrrcap
   - nocapture
+  - osof
   - pdbaltpath
   - pemfile
+  - rdmsr
+  - rdtsc
+  - regs
   - rustls
   - sysregs
+  - tdcall
+  - tdvmcall
   - uart
   - uefi
   - ungated
+  - vmcall
   - vswhere
   - webpki
+  - wrmsr
   - zbuild
   - zsanitizer

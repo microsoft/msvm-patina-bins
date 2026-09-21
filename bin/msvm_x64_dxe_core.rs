@@ -11,6 +11,7 @@
 #![no_main]
 
 use core::{ffi::c_void, panic::PanicInfo};
+use msvm_resources::x64::{COM1_REGISTER_BASE, COM2_REGISTER_BASE};
 use patina::{debug::log::Format, peripheral::serial::uart::Uart16550};
 use patina_adv_logger::{
     component::AdvancedLoggerComponent,
@@ -44,7 +45,7 @@ static LOGGER: AdvancedLogger<Uart16550> = AdvancedLogger::new(
     ],
     log::LevelFilter::Info,
     // SAFETY: This is the IO port for MSVM X64 serial traffic
-    unsafe { Uart16550::new_io(0x2F8) },
+    unsafe { Uart16550::new_io(COM2_REGISTER_BASE) },
 );
 
 #[cfg(feature = "enable_debugger")]
@@ -55,7 +56,7 @@ const _ENABLE_DEBUGGER: bool = false;
 #[cfg(feature = "build_debugger")]
 static DEBUGGER: patina_debugger::PatinaDebugger<Uart16550> =
     // SAFETY: This is the IO port base address for the MSVM X64 debugger
-    patina_debugger::PatinaDebugger::new(unsafe { Uart16550::new_io(0x3F8) })
+    patina_debugger::PatinaDebugger::new(unsafe { Uart16550::new_io(COM1_REGISTER_BASE) })
             .with_force_enable(_ENABLE_DEBUGGER)
             .with_log_policy(patina_debugger::DebuggerLoggingPolicy::FullLogging)
             .with_transport_init();
@@ -68,6 +69,10 @@ impl MemoryInfo for Msvm {}
 impl CpuInfo for Msvm {
     fn perf_timer_frequency() -> Option<u64> {
         None
+    }
+
+    fn exception_handlers() -> &'static [(ExceptionType, &'static dyn InterruptHandler)] {
+        msvm_resources::x64::exception_handlers()
     }
 }
 

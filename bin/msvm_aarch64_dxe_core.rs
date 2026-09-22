@@ -11,8 +11,9 @@
 #![no_main]
 
 use core::{ffi::c_void, panic::PanicInfo, sync::atomic::AtomicU64};
+use msvm_resources::FailFast;
 use msvm_resources::config::MsvmPatinaConfig;
-use patina::{debug::log::Format, peripheral::serial::uart::UartPl011};
+use patina::{debug::log::Format, peripheral::serial::uart::UartPl011, standard::efi};
 use patina_adv_logger::{
     component::AdvancedLoggerComponent,
     logger::{AdvancedLogger, TargetFilter},
@@ -32,7 +33,7 @@ fn panic(info: &PanicInfo) -> ! {
 
     patina_debugger::breakpoint();
 
-    loop {}
+    msvm_resources::aarch64::MsvmFailFast::fail_fast(efi::Status::ABORTED.as_usize(), 0, 0, 0, 0)
 }
 
 static LOGGER: AdvancedLogger<UartPl011> = AdvancedLogger::new(

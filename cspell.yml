@@ -30,9 +30,11 @@ words:
   - gicd
   - gicr
   - keccak
+  - lidt
   - lvmcall
   - mdbook
   - micr
+  - mmio
   - msvc
   - msvm
   - msrs
@@ -41,6 +43,7 @@ words:
   - osof
   - pdbaltpath
   - pemfile
+  - psci
   - rdmsr
   - rdtsc
   - regs

@@ -11,8 +11,9 @@
 #![no_main]
 
 use core::{ffi::c_void, panic::PanicInfo};
-use msvm_resources::x64::{COM1_REGISTER_BASE, COM2_REGISTER_BASE};
-use patina::{debug::log::Format, peripheral::serial::uart::Uart16550};
+use msvm_resources::FailFast;
+use msvm_resources::x64::COM2_REGISTER_BASE;
+use patina::{debug::log::Format, peripheral::serial::uart::Uart16550, standard::efi};
 use patina_adv_logger::{
     component::AdvancedLoggerComponent,
     logger::{AdvancedLogger, TargetFilter},
@@ -32,7 +33,7 @@ fn panic(info: &PanicInfo) -> ! {
 
     patina_debugger::breakpoint();
 
-    loop {}
+    msvm_resources::x64::MsvmFailFast::fail_fast(efi::Status::ABORTED.as_usize(), 0, 0, 0, 0)
 }
 
 static LOGGER: AdvancedLogger<Uart16550> = AdvancedLogger::new(
@@ -56,7 +57,7 @@ const _ENABLE_DEBUGGER: bool = false;
 #[cfg(feature = "build_debugger")]
 static DEBUGGER: patina_debugger::PatinaDebugger<Uart16550> =
     // SAFETY: This is the IO port base address for the MSVM X64 debugger
-    patina_debugger::PatinaDebugger::new(unsafe { Uart16550::new_io(COM1_REGISTER_BASE) })
+    patina_debugger::PatinaDebugger::new(unsafe { Uart16550::new_io(msvm_resources::x64::COM1_REGISTER_BASE) })
             .with_force_enable(_ENABLE_DEBUGGER)
             .with_log_policy(patina_debugger::DebuggerLoggingPolicy::FullLogging)
             .with_transport_init();

@@ -21,7 +21,7 @@ jobs:
     steps:
 
       - name: ✅ Checkout Base Branch (${{ github.base_ref }}) ✅
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           ref: ${{ github.base_ref }}
           fetch-depth: 0
@@ -47,7 +47,7 @@ jobs:
           echo "msvm_aarch64_release=$(get_size target/aarch64-unknown-uefi/release/msvm_aarch64_dxe_core.efi)" >> $GITHUB_OUTPUT
 
       - name: ✅ Checkout PR Branch (${{ github.head_ref }}) ✅
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
@@ -144,7 +144,7 @@ jobs:
           cp "$GITHUB_WORKSPACE/binary_size_report.md" pr-data/
 
       - name: 📤 Upload PR Data and Report
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: binary-size-report-data
           path: pr-data/

@@ -26,7 +26,7 @@ patina_adv_logger = { version = "23" }
 patina_debugger = { version = "23" }
 patina_dxe_core = { version = "23", features = ["confidential_compute"] }
 patina_ffs_extractors = { version = "23" }
-patina_mm = { version = "23" }
+patina_mm = { version = "24" }
 patina_performance = { version = "23" }
 patina_samples = { version = "23" }
 patina_stacktrace = { version = "23" }

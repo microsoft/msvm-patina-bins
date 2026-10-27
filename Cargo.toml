@@ -22,7 +22,7 @@ path = "src/lib.rs"
 
 # Patina dependencies
 patina = { version = "23" }
-patina_adv_logger = { version = "23" }
+patina_adv_logger = { version = "24" }
 patina_debugger = { version = "23" }
 patina_dxe_core = { version = "23", features = ["confidential_compute"] }
 patina_ffs_extractors = { version = "23" }

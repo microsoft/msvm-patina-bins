@@ -68,8 +68,10 @@ struct Msvm;
 impl MemoryInfo for Msvm {}
 
 impl CpuInfo for Msvm {
+    const ENABLE_MP_SERVICES: bool = false;
+
     fn perf_timer_frequency() -> Option<u64> {
-        None
+        Some(1_000_000)
     }
 
     fn exception_handlers() -> &'static [(ExceptionType, &'static dyn InterruptHandler)] {
@@ -90,6 +92,8 @@ impl PlatformInfo for Msvm {
     type MemoryInfo = Self;
     type ComponentInfo = Self;
     type Extractor = CompositeSectionExtractor;
+
+    const UEFI_SPEC_VERSION: patina::UefiSpecVersion = patina::UefiSpecVersion::V2_7;
 }
 
 static CORE: Core<Msvm> = Core::new(CompositeSectionExtractor::new());

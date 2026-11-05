@@ -72,9 +72,10 @@ impl MemoryInfo for Msvm {}
 
 impl CpuInfo for Msvm {
     fn perf_timer_frequency() -> Option<u64> {
-        None
+        Some(1_000_000)
     }
 
+    #[cfg(target_arch = "aarch64")]
     fn gic_bases() -> GicBases {
         // SAFETY: gicd and gicr bases correctly point to the register spaces.
         // SAFETY: Access to these registers is exclusive to this struct instance.
@@ -100,6 +101,8 @@ impl PlatformInfo for Msvm {
     type MemoryInfo = Self;
     type ComponentInfo = Self;
     type Extractor = CompositeSectionExtractor;
+
+    const UEFI_SPEC_VERSION: patina::UefiSpecVersion = patina::UefiSpecVersion::V2_7;
 }
 
 static CORE: Core<Msvm> = Core::new(CompositeSectionExtractor::new());

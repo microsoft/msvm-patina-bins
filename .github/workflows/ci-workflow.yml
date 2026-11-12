@@ -29,7 +29,7 @@ concurrency:
 jobs:
   ci_workflow:
     name: Run
-    uses: OpenDevicePartnership/patina-devops/.github/workflows/CiWorkflow.yml@53fca46dac83baf162fe00c294c40b66a6c57d00 # v0.3.12
+    uses: OpenDevicePartnership/patina-devops/.github/workflows/CiWorkflow.yml@37902f7991125091a91ca4054395d2d65576a7f5 # v0.3.16
     with:
       build-tasks: msvm-x64,msvm-aarch64,msvm-x64-release,msvm-aarch64-release
       run-cargo-vet: false

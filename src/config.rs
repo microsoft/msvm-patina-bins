@@ -15,9 +15,8 @@ use patina::{
 };
 use zerocopy::{FromBytes, Immutable, KnownLayout, Ref};
 
-const MSVM_PATINA_CONFIG_HOB_GUID: BinaryGuid = BinaryGuid::from_bytes(&[
-    0x1f, 0xeb, 0x5a, 0x86, 0x76, 0x95, 0x4a, 0x5c, 0x93, 0x49, 0x7d, 0x24, 0x3a, 0x43, 0x99, 0x49,
-]);
+const MSVM_PATINA_CONFIG_HOB_GUID: BinaryGuid =
+    BinaryGuid::from_fields(0x1feb5a86, 0x7695, 0x4a5c, 0x93, 0x49, &[0x7d, 0x24, 0x3a, 0x43, 0x99, 0x49]);
 
 const MSVM_PATINA_CONFIG_HOB_VERSION_MAJOR: u32 = 1;
 const MSVM_PATINA_CONFIG_HOB_VERSION_MINOR: u32 = 0;
